@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+<project name="org.sleuthkit.autopsy.core" default="netbeans" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant" >
+    <description>Builds, tests, and runs the project org.sleuthkit.autopsy.core</description>
+    <import file="nbproject/build-impl.xml"/>
+    <import file="../BootstrapIvy.xml"/>
+    <import file="../TSKVersion.xml"/>
+     
+     
+    <property name="thirdparty.dir" value="${basedir}/../thirdparty" />
+    <property name="modules.dir" value="${basedir}/release/modules/" />
+    <property name="ext.dir" value="${modules.dir}/ext" />
+    <property name="test-input" location="test/qa-functional/data"/>
+
+    <target name="get-InternalPythonModules" description="get internal python modules"> 
+        <copy todir="release/InternalPythonModules" >
+            <fileset dir="{basedir}/../../InternalPythonModules"/>
+        </copy>
+    </target>
+
+    <target name="get-thirdparty-dependencies" description="get third-party dependencies"> 
+        <!--Copy photorec to release-->
+        <copy todir="${basedir}/release/photorec_exec" >
+            <fileset dir="${thirdparty.dir}/photorec_exec"/>
+        </copy>
+        <!--Copy ewfexport to release-->
+        <copy todir="${basedir}/release/ewfexport_exec" >
+            <fileset dir="${thirdparty.dir}/ewfexport_exec"/>
+        </copy>
+
+        <!--Copy Volatility to release-->
+        <copy todir="${basedir}/release/Volatility" >
+            <fileset dir="${thirdparty.dir}/Volatility"/>
+        </copy>
+        
+        <!--Copy Tesseract OCR to release-->
+        <copy todir="${basedir}/release/Tesseract-OCR" >
+            <fileset dir="${thirdparty.dir}/Tesseract-OCR"/>
+        </copy>
+        
+        <!--Copy Plaso to release-->
+        <copy todir="${basedir}/release/plaso" >
+            <fileset dir="${thirdparty.dir}/plaso"/>
+        </copy>     
+        <!--Copy GStreamer to release-->
+        <copy todir="${basedir}/release/gstreamer" >
+            <fileset dir="${thirdparty.dir}/gstreamer"/>
+        </copy>
+		
+        <!--Copy 7-Zip to release-->
+        <copy todir="${basedir}/release/7-Zip" >
+            <fileset dir="${thirdparty.dir}/7-Zip"/>
+        </copy>
+
+        <!--Copy InterestingFileSetRules to release-->
+        <copy todir="${basedir}/release/InterestingFileSetRules" >
+            <fileset dir="${thirdparty.dir}/InterestingFileSetRules"/>
+        </copy>
+
+        <!--Copy OfficialHashSets to release-->
+        <copy todir="${basedir}/release/OfficialHashSets" >
+            <fileset dir="${thirdparty.dir}/OfficialHashSets"/>
+        </copy>
+
+        <!-- The 'libgstlibav.dll' file is too big to store on GitHub, so we
+        have it stored in a ZIP file. We'll extract it in place and remove
+        the ZIP file afterward. -->
+        <property name="gstreamer-base-path" value="${basedir}/release/gstreamer/1.0/" />
+
+        <unzip src="${gstreamer-base-path}/x86_64/lib/gstreamer-1.0/libgstlibav.zip"
+               dest="${gstreamer-base-path}/x86_64/lib/gstreamer-1.0/"/>
+        <delete file="${gstreamer-base-path}/x86_64/lib/gstreamer-1.0/libgstlibav.zip" />
+
+        <unzip src="${gstreamer-base-path}/x86/lib/gstreamer-1.0/libgstlibav.zip"
+               dest="${gstreamer-base-path}/x86/lib/gstreamer-1.0/"/>
+        <delete file="${gstreamer-base-path}/x86/lib/gstreamer-1.0/libgstlibav.zip" />
+
+        <!--Copy other jars-->
+        <copy file="${thirdparty.dir}/rejistry/Rejistry-1.1-SNAPSHOT.jar" todir="${ext.dir}" />
+        <copy file="${thirdparty.dir}/sevenzip/sevenzipjbinding.jar" todir="${ext.dir}" />
+        <copy file="${thirdparty.dir}/sevenzip/sevenzipjbinding-AllPlatforms.jar" todir="${ext.dir}" />
+        <copy file="${thirdparty.dir}/stix/StixLib.jar" todir="${ext.dir}" />
+        <copy todir="${ext.dir}">
+            <fileset dir="${thirdparty.dir}/IcePDF 6.2.2/"/> 
+        </copy>
+        <copy file="${thirdparty.dir}/jdom/jdom-2.0.5.jar" todir="${ext.dir}" />
+        <copy file="${thirdparty.dir}/jdom/jdom-2.0.5-contrib.jar" todir="${ext.dir}" />
+		<copy file="${thirdparty.dir}/DatCon/3.6.9/DatCon.jar" todir="${ext.dir}" />
+    </target>
+    
+    
+    
+    <!-- Verify that the TSK_HOME env variable is set -->
+    <target name="findTSK">
+        <property environment="env"/>
+        <condition property="tskFound">
+            <isset property="env.TSK_HOME"/>
+        </condition>
+        <fail unless="tskFound" message="TSK_HOME must be set as an environment variable."/>
+        <echo> TSK_HOME: ${env.TSK_HOME}</echo>
+    </target>  
+    
+    <target name="getTSKJars" depends="findTSK">
+        <property environment="env"/>
+        <copy file="${env.TSK_HOME}/bindings/java/dist/sleuthkit-${TSK_VERSION}.jar" 
+              tofile="${ext.dir}/sleuthkit-${TSK_VERSION}.jar"/>
+        <copy file="${env.TSK_HOME}/bindings/java/lib/sqlite-jdbc-3.25.2.jar"
+              tofile="${ext.dir}/sqlite-jdbc-3.25.2.jar"/>
+		<copy file="${env.TSK_HOME}/bindings/java/lib/postgresql-9.4.1211.jre7.jar" 
+              tofile="${ext.dir}/postgresql-9.4.1211.jre7.jar"/>
+        <copy file="${env.TSK_HOME}/bindings/java/lib/mchange-commons-java-0.2.9.jar"
+              tofile="${ext.dir}/mchange-commons-java-0.2.9.jar"/>
+        <copy file="${env.TSK_HOME}/bindings/java/lib/c3p0-0.9.5.jar"
+              tofile="${ext.dir}/c3p0-0.9.5.jar"/>
+        <copy file="${env.TSK_HOME}/bindings/java/lib/SparseBitSet-1.1.jar"
+                      tofile="${ext.dir}/SparseBitSet-1.1.jar"/>	
+        <copy file="${env.TSK_HOME}/case-uco/java/dist/sleuthkit-caseuco-${TSK_VERSION}.jar" 
+              tofile="${ext.dir}/sleuthkit-caseuco-${TSK_VERSION}.jar"/>  
+    </target>
+
+    <target name="download-binlist">
+        <get src="https://raw.githubusercontent.com/binlist/data/master/ranges.csv" 
+             dest="src\org\sleuthkit\autopsy\datamodel" 
+             ignoreerrors="true"
+             verbose="true"/>
+    </target>
+
+    <target name="getTestDataFiles">
+        <mkdir dir="${basedir}/test/qa-functional/data"/>
+	<get src="https://drive.google.com/uc?id=1gyKzqJHtaBjFBqeB29N5vSpf1oH9N0bV" dest="${test-input}/EmbeddedIM_img1_v2.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=1gvvV797dKczkwpWII4hIryBXCc0w5zL-" dest="${test-input}/BitlockerDetection_img1_v1.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=1lYzd--9YUB7yDccM7NPOo8PC1xxuOiKs" dest="${test-input}/SqlCipherDetection_img1_v1.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=1QRNKs824kksiJLZ4qcs59Nytw0fJKEjb" dest="${test-input}/IngestFilters_img1_v1.img" skipexisting="true"/>  
+        <get src="https://drive.google.com/uc?id=1OMTB5gD4_VuaFkLWu2I33FN8VAHoRQbW" dest="${test-input}/IngestFilters_local1_v1.zip" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=1WGMkivlDi_I_vB1aYY6puAPktbmlNSL-" dest="${test-input}/PasswordDetection_img1_v1.img" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=1X2DzJOJ1SjUkAtZXJ3oQHXkjF0NX_jOz" dest="${test-input}/VeracryptDetection_img1_v1.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=19gRepVVvLsDHtBwIkX2VVjsBWIub7aIV" dest="${test-input}/CommonFiles_img1_v1.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=1chUMtA0CNyPBZ0yuTl9F_O103R21Ox0p" dest="${test-input}/CommonFiles_img2_v1.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=1TmdjSjV7MLwVEmgWGJLOYnWDiZeqOgmd" dest="${test-input}/CommonFiles_img3_v1.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=10u8ocYv6KKDVox6SRv_0fQeVqJjWAFJr" dest="${test-input}/CommonFiles_img4_v1.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=1pcYsYB1tTzg63kgTG52u40osbZ-rUHwr" dest="${test-input}/c1ds1_v1.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=11F_Kjht23aFfbdHN1Ryl2fLFv3A76E6O" dest="${test-input}/c1ds2_v1.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=1gVnHJEzUmCGVVqhcpI9UHB9zHY2zY5VL" dest="${test-input}/c2ds1_v1.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=1RodtAXWXrDvwuMVQYBM_QaOi3XR2B41F" dest="${test-input}/c2ds2_v1.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=1t4RKK375nKFAh2iGuu5Nttdy4EFyUqlv" dest="${test-input}/c3ds1_v1.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=1be6Szhb57duDkfCc_EGeyHCrAzrIDjs3" dest="${test-input}/c3ds2_v1.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=13YJ6nNXiAxRjNKwzcN9ohwvnVupxPvXc" dest="${test-input}/CommonFilesAttrs_img4_v1.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=1UczQeY5ZZiQaql_ErnPRxVyX6qMgbvil" dest="${test-input}/CommonFilesAttrs_img3_v1.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=1c2egfrKDQqFD04EqhGIDfs82Uub-fGlx" dest="${test-input}/CommonFilesAttrs_img2_v1.vhd" skipexisting="true"/>
+        <get src="https://drive.google.com/uc?id=1ns2olaWsBu_c4EoE4Seh8t_B3U5RnLKd" dest="${test-input}/CommonFilesAttrs_img1_v1.vhd" skipexisting="true"/>
+
+    </target>
+
+    <target name="get-deps" depends="init-ivy,getTSKJars,get-thirdparty-dependencies,get-InternalPythonModules, download-binlist">
+        <mkdir dir="${ext.dir}"/>
+        <copy file="${thirdparty.dir}/LICENSE-2.0.txt" todir="${ext.dir}" />        
+        <!-- fetch all the dependencies from Ivy and stick them in the right places -->
+        <ivy:resolve log="quiet"/>
+        <ivy:retrieve conf="core" pattern="${ext.dir}/[artifact]-[revision](-[classifier]).[ext]" />
+    </target>
+
+    <target name="init" depends="get-deps,harness.init"/>
+  
+    <target name="clean" depends="projectized-common.clean">
+        <!--Override clean to delete jars, etc downloaded with Ivy, 
+        or copied in from thirdparty folder.  This way we don't end up with 
+        out-of-date/unneeded stuff in the installer-->
+        <delete dir="${basedir}/release/"/>
+    </target>
+    
+    <target name="compile" depends="projectized-common.compile">
+        <antcall target="copy-bundle" />
+    </target>
+
+    <target name="copy-bundle">
+        <!-- the externalized strings in 'src' are in both the java files as annotations and in the Bundle.property files.
+        The strings get merged during compilation.  This target copies that merged file into src so that it can be checked
+        in and used as a basis for translation efforts -->
+        <copy todir="src">
+            <fileset dir="build/classes">
+                <include name="**/Bundle.properties"/>
+            </fileset>
+            <globmapper from="*" to="*-MERGED"/>
+        </copy>
+    </target>
+    
+</project>

@@ -1,0 +1,15 @@
+*.java                   text diff=java
+
+*.txt                   text
+*.sh                   eol=lf
+*.mf                   text
+*.xml                   text
+*.form                   text
+*.properties                   text
+*.properties-MERGED                  text
+*.html                   text diff=html
+*.dox                   text
+Doxyfile                text
+
+*.py                  text diff=python
+*.pl			text
